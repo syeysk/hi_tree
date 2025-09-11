@@ -8,3 +8,4 @@ passenger_wsgi.py
 .idea
 .venv
 venv
+/static

@@ -17,6 +17,11 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
+Соберите статику:
+```sh
+python manage.py collectstatic
+```
+
 Импортируйте базу:
 ```sh
 python -Xutf8 manage.py yaml2csv -r
