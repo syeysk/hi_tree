@@ -1,0 +1,10 @@
+data/*.yaml
+db.sqlite3
+__pycache__/
+*.py[cod]
+passenger_wsgi.py
+.env
+.debug.log
+.idea
+.venv
+venv
