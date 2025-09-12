@@ -15,12 +15,13 @@ class UnitListView(APIView):
             if year:
                 year = int(year)
                 kwargs['child__names__start_year__lte'] = year
-                kwargs['child__names__end_year__gte'] = year
+                kwargs['child__names__end_year__gt'] = year
 
-            includings = Including.objects.filter(
-                parent_id=int(parent_unit_id),
-                **kwargs,
-            ).values('child__names__id', 'child__names__name', 'child__names__start_year', 'child__names__end_year')
+            includings = (
+                Including.objects.filter(parent_id=int(parent_unit_id), **kwargs)
+                .values('child__names__id', 'child__names__name', 'child__names__start_year', 'child__names__end_year')
+                .order_by('child__names__name')
+            )
             for unit_dict in includings:
                 data.append({
                     'id': unit_dict['child__names__id'],
@@ -32,9 +33,9 @@ class UnitListView(APIView):
             if year:
                 year = int(year)
                 kwargs['start_year__lte'] = year
-                kwargs['end_year__gte'] = year
+                kwargs['end_year__gt'] = year
 
-            unit_names = UnitName.objects.filter(unit__type=UNIT_TYPE_COUNTRY, **kwargs)
+            unit_names = UnitName.objects.filter(unit__type=UNIT_TYPE_COUNTRY, **kwargs).order_by('name')
             for unit_name in unit_names:
                 data.append({
                     'id': unit_name.unit.pk,
