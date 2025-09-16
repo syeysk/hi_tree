@@ -1,3 +1,4 @@
+from django.contrib.gis.db import models as gis_models
 from django.db import models
 
 UNIT_TYPE_COUNTRY = 1
@@ -63,8 +64,9 @@ class Date(models.Model):
         abstract = True
 
 
-class Unit(Date, models.Model):
+class Unit(Date, gis_models.Model):
     type = models.IntegerField(verbose_name='Тип', choices=UNIT_TYPES)
+    point = gis_models.PointField(verbose_name='Позиция на карте', null=True)
 
     class Meta:
         verbose_name = 'Административно-территориальная единица'

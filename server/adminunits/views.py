@@ -19,12 +19,12 @@ class UnitListView(APIView):
 
             includings = (
                 Including.objects.filter(parent_id=int(parent_unit_id), **kwargs)
-                .values('child__names__id', 'child__names__name', 'child__names__start_year', 'child__names__end_year')
+                .values('child__id', 'child__names__name', 'child__names__start_year', 'child__names__end_year')
                 .order_by('child__names__name')
             )
             for unit_dict in includings:
                 data.append({
-                    'id': unit_dict['child__names__id'],
+                    'id': unit_dict['child__id'],
                     'name': unit_dict['child__names__name'],
                     'start_year': unit_dict['child__names__start_year'],
                     'end_year': unit_dict['child__names__end_year'],

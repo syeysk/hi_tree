@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'django.contrib.gis',
     'adminunits',
 ]
 
@@ -83,7 +84,7 @@ WSGI_APPLICATION = 'server.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
@@ -169,3 +170,7 @@ LOGGING = {
         },
     },
 }
+
+GDAL_LIBRARY_PATH = env.str('GDAL_LIBRARY_PATH', default=None)
+GEOS_LIBRARY_PATH = env.str('GEOS_LIBRARY_PATH', default=None)
+SPATIALITE_LIBRARY_PATH = env.str('SPATIALITE_LIBRARY_PATH', default=None)
