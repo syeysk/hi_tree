@@ -1,13 +1,16 @@
+from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from adminunits.models import Including, UnitName, UNIT_TYPE_COUNTRY
+from adminunits.models import Including, UnitName, UNIT_TYPE_COUNTRY, UNIT_TYPE_SETTLEMENT
+
+DEFAULT_YEAR = '1708'
 
 
 class UnitListView(APIView):
     def get(self, request):
-        year = request.GET.get('year')
+        year = request.GET.get('year', DEFAULT_YEAR)
         parent_unit_id = request.GET.get('parent')
         data = []
         kwargs = {}
@@ -43,5 +46,32 @@ class UnitListView(APIView):
                     'start_year': unit_name.start_year,
                     'end_year': unit_name.end_year,
                 })
+
+        return Response(status=status.HTTP_200_OK, data=data)
+
+
+class UnitListOnMapView(APIView):
+    def get(self, request):
+        year = request.GET.get('year', DEFAULT_YEAR)
+        polygon_points = [float(value) for value in request.GET['polygon'].split(',')]
+        polygon = Polygon.from_bbox(polygon_points)
+        data = []
+        kwargs = {}
+        if year:
+            year = int(year)
+            # kwargs['start_year__lte'] = year
+            # kwargs['end_year__gt'] = year
+
+        unit_names = (
+            UnitName.objects.filter(unit__type=UNIT_TYPE_SETTLEMENT, **kwargs)
+            .filter(unit__point__isnull=False, unit__point__contained=polygon)
+            .values('unit__pk', 'name', 'unit__point')
+        )
+        for unit_name in unit_names:
+            data.append({
+                'id': unit_name['unit__pk'],
+                'name': unit_name['name'],
+                'point': list(unit_name['unit__point']),
+            })
 
         return Response(status=status.HTTP_200_OK, data=data)
