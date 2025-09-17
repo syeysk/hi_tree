@@ -1,10 +1,11 @@
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, Point
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from adminunits.models import Including, Unit, UnitName, UNIT_TYPE_COUNTRY, UNIT_TYPE_SETTLEMENT
+from adminunits.models import Including, Unit, UnitName, UNIT_TYPE_COUNTRY, UNIT_TYPE_SETTLEMENT, UNIT_TYPES
+from adminunits.serializers import UnitUpdateSerializer
 
 DEFAULT_YEAR = '1708'
 
@@ -93,7 +94,22 @@ class UnitView(APIView):
 
     def post(self, request, unit_id):
         data = request.data
-        return Response(status=status.HTTP_200_OK, data=data)
+        unit = Unit.objects.filter(id=int(data['id'])).first()
+
+        # if 'lat' in data and 'lon' in data:
+        #     lat, lon = data.pop('lat'), data.pop('lon')
+        #     unit.point = Point(float(lat), float(lon)) if lat and lon else None
+
+        response_data = {}
+        serializer = UnitUpdateSerializer(unit, data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        response_data['updated_fields'] = [
+            name for name, value in serializer.validated_data.items() if getattr(unit, name) != value
+        ]
+        serializer.save()
+
+        return Response(status=status.HTTP_200_OK, data=response_data)
     
     def get(self, request, unit_id):
         unit = Unit.objects.filter(id=unit_id).first()
@@ -139,5 +155,13 @@ class UnitView(APIView):
             'type': unit.type,
             'names': unit_names,
             'parents': parents,
+        }
+        return Response(status=status.HTTP_200_OK, data=data)
+
+
+class DataView(APIView):
+    def get(self, request):
+        data = {
+            'types': dict(UNIT_TYPES),
         }
         return Response(status=status.HTTP_200_OK, data=data)
