@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Polygon
+from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -57,21 +58,24 @@ class UnitListOnMapView(APIView):
         polygon = Polygon.from_bbox(polygon_points)
         data = []
         kwargs = {}
+        args = []
         if year:
             year = int(year)
-            # kwargs['start_year__lte'] = year
-            # kwargs['end_year__gt'] = year
+            args.append(Q(unit__start_year__lte=year) | Q(unit__start_year__isnull=True))
+            args.append(Q(unit__end_year__gt=year) | Q(unit__end_year__isnull=True))
 
         unit_names = (
-            UnitName.objects.filter(unit__type=UNIT_TYPE_SETTLEMENT, **kwargs)
+            UnitName.objects.filter(*args, unit__type=UNIT_TYPE_SETTLEMENT, **kwargs)
             .filter(unit__point__isnull=False, unit__point__contained=polygon)
-            .values('unit__pk', 'name', 'unit__point')
+            .values('unit__pk', 'name', 'unit__point', 'unit__start_year', 'unit__end_year')
         )
         for unit_name in unit_names:
             data.append({
                 'id': unit_name['unit__pk'],
                 'name': unit_name['name'],
                 'point': list(unit_name['unit__point']),
+                's': unit_name['unit__start_year'],
+                'e': unit_name['unit__end_year'],
             })
 
         return Response(status=status.HTTP_200_OK, data=data)
