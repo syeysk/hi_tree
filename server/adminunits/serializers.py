@@ -25,30 +25,32 @@ class UnitUpdateSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        point = self.instance.point
-        if point:
-            current_lat, current_lon = list(point)
-            if 'lat' in data and 'lon' in data:
-                lat, lon = data['lat'], data['lon']
-                if lat is None and lon is None:
-                    data['point'] = None
-                elif lat and lon:
-                    data['point'] = Point(lat, lon)
+        if 'lat' in data or 'lon' in data:
+            point = self.instance.point
+            if point:
+                current_lon, current_lat = list(point)
+                if 'lat' in data and 'lon' in data:
+                    lat, lon = data['lat'], data['lon']
+                    if lat is None and lon is None:
+                        data['point'] = None
+                    elif lat and lon:
+                        data['point'] = Point(lon, lat)
+                    else:
+                        raise ValidationError(self.message)
+                elif 'lat' in data and data['lat']:
+                    data['point'] = Point(current_lon, data['lat'])
+                elif 'lon' in data and data['lon']:
+                    data['point'] = Point(data['lon'], current_lat)
                 else:
                     raise ValidationError(self.message)
-            elif 'lat' in data and data['lat']:
-                data['point'] = Point(data['lat'], current_lon)
-            elif 'lon' in data and data['lon']:
-                data['point'] = Point(current_lat, data['lon'])
             else:
-                raise ValidationError(self.message)
-        else:
-            lat, lon = data.get('lat'), data.get('lon')
-            if lat and lon:
-                data['point'] = Point(float(lat), float(lon))
-            else:
-                raise ValidationError(self.message)
+                lat, lon = data.get('lat'), data.get('lon')
+                if lat and lon:
+                    data['point'] = Point(float(lon), float(lat))
+                else:
+                    raise ValidationError(self.message)
 
-        data.pop('lat', None)
-        data.pop('lon', None)        
+            data.pop('lat', None)
+            data.pop('lon', None)
+ 
         return data

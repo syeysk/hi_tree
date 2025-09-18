@@ -114,19 +114,23 @@ class UnitView(APIView):
     def get(self, request, unit_id):
         unit = Unit.objects.filter(id=unit_id).first()
         point = unit.point
-        lat, lon = list(point) if point else [None, None]
+        lon, lat = list(point) if point else [None, None]
         parents = []
         unit_names = []
         for unit_name in unit.names.order_by('start_year').all():
             unit_names.append(
                 {
                     'name': unit_name.name,
-                    'start_year': unit_name.start_year,
-                    'start_month': unit_name.start_month,
-                    'start_day': unit_name.start_day,
-                    'end_year': unit_name.end_year,
-                    'end_month': unit_name.end_month,
-                    'end_day': unit_name.end_day,
+                    'start_date': {
+                        'year': unit_name.start_year,
+                        'month': unit_name.start_month,
+                        'day': unit_name.start_day,
+                    },
+                    'end_date': {
+                        'year': unit_name.end_year,
+                        'month': unit_name.end_month,
+                        'day': unit_name.end_day,
+                    },
                 }
             )
         for including in unit.parent_includings.order_by('start_year').all():
@@ -135,23 +139,31 @@ class UnitView(APIView):
                     'id': including.parent.id,
                     'including_id': including.id,
                     'name': including.parent.names.first().name,
-                    'start_year': including.start_year,
-                    'start_month': including.start_month,
-                    'start_day': including.start_day,
-                    'end_year': including.end_year,
-                    'end_month': including.end_month,
-                    'end_day': including.end_day,
+                    'start_date': {
+                        'year': including.start_year,
+                        'month': including.start_month,
+                        'day': including.start_day,
+                    },
+                    'end_date': {
+                        'year': including.end_year,
+                        'month': including.end_month,
+                        'day': including.end_day,
+                    },
                 }
             )
         data = {
             'lat': lat,
             'lon': lon,
-            'start_year': unit.start_year,
-            'start_month': unit.start_month,
-            'start_day': unit.start_day,
-            'end_year': unit.end_year,
-            'end_month': unit.end_month,
-            'end_day': unit.end_day,
+            'start_date': {
+                'year': unit.start_year,
+                'month': unit.start_month,
+                'day': unit.start_day,
+            },
+            'end_date': {
+                'year': unit.end_year,
+                'month': unit.end_month,
+                'day': unit.end_day,
+            },
             'type': unit.type,
             'names': unit_names,
             'parents': parents,
