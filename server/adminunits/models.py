@@ -4,10 +4,12 @@ from django.db import models
 UNIT_TYPE_COUNTRY = 1
 UNIT_TYPE_MIDDLE = 2
 UNIT_TYPE_SETTLEMENT = 3
+UNIT_TYPE_BUILDING = 4
 UNIT_TYPES = (
     (UNIT_TYPE_COUNTRY, 'Государство'),
-    (UNIT_TYPE_MIDDLE, 'Промежуточная часть'),
+    (UNIT_TYPE_MIDDLE, 'Промежуточная единица'),
     (UNIT_TYPE_SETTLEMENT, 'Населённый пункт'),
+    (UNIT_TYPE_BUILDING, 'Строение'),
 )
 
 CALENDAR_GREGORIAN = 1
